@@ -1,26 +1,22 @@
 "reach 0.1";
 
 const User = {
-  getNumber: Fun([], UInt),
+  getMsg: Fun([], Bytes(5)),
 };
 
 export const main = Reach.App(() => {
   const Alice = Participant("Alice", {
     // Specify Alice's interact interface here
     ...User,
+    // ...hasConsoleLogger,
   });
   init();
-  // The first one to publish deploys the contract
-  Alice.publish();
-  commit();
-
   Alice.only(() => {
-    const aliceNumber = declassify(interact.getNumber());
+    const aliceMsg = declassify(interact.getMsg());
   });
-
-  Alice.publish(aliceNumber);
+  Alice.publish(aliceMsg);
+  // Alice.interact.log({ aliceMsg });
   commit();
 
-  // write your program here
   exit();
 });
