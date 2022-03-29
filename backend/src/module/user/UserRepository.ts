@@ -19,7 +19,7 @@ export default class UserRepository implements IUserRepository {
 
   public findUserById(userId: UserType["id"]): UserType {
     const user = this.repository.find((user: UserType) => user.id === userId);
-    return user;
+    return user!; // TODO: remove !
   }
 
   public deleteUserById(userId: UserType["id"]): UserType {
@@ -33,6 +33,7 @@ export default class UserRepository implements IUserRepository {
   }
 
   public updateUser(userId: UserType["id"], newInfo: CreateUserDTO): UserType {
+    // TODO: this can be undefined
     const userIndex = this.repository.findIndex(
       (user: UserType) => user.id === userId
     );
