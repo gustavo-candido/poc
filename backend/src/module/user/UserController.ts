@@ -2,36 +2,45 @@ import { Request, Response } from "express";
 import UserRepository from "./UserRepository";
 import { IUserRepository } from "./types";
 
+type UserRepoType = UserRepository;
 export default class UserController {
-  constructor(private userRepository: IUserRepository) {}
+  constructor(private userRepository: UserRepoType) {}
 
-  public create(request: Request, response: Response) {
+  public async create(request: Request, response: Response) {
     const { email, password } = request.body;
-    return response.json(this.userRepository.createUser({ email, password }));
+    const createdUser = this.userRepository.createUser({
+      email,
+      password,
+    });
+
+    return response.json(createdUser);
   }
 
-  public list(_: Request, response: Response) {
-    return response.json(this.userRepository.listUsers());
+  public async list(_: Request, response: Response) {
+    const users = await this.userRepository.listUsers();
+    return response.json(users);
   }
 
-  public findById(request: Request, response: Response) {
+  public async findById(request: Request, response: Response) {
     const { userIdPar } = request.params;
     const userId = parseInt(userIdPar);
-    return response.json(this.userRepository.findUserById(userId));
+
+    const user = await this.userRepository.findUserById(userId);
+    return response.json(user);
   }
 
-  public deleteById(request: Request, response: Response) {
+  public async deleteById(request: Request, response: Response) {
     const { userIdPar } = request.params;
     const userId = parseInt(userIdPar);
-    return response.json(this.userRepository.deleteUserById(userId));
+    return response.json(await this.userRepository.deleteUserById(userId));
   }
 
-  public updateUser(request: Request, response: Response) {
+  public async updateUser(request: Request, response: Response) {
     const { email, password } = request.body;
     const { userIdPar } = request.params;
     const userId = parseInt(userIdPar);
     return response.json(
-      this.userRepository.updateUser(userId, { email, password })
+      await this.userRepository.updateUser(userId, { email, password })
     );
   }
 }

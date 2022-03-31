@@ -1,45 +1,51 @@
+import knex, { Knex } from "knex";
+import knexconfig from "../../db/knexfile";
+
 import { CreateUserDTO, IUserRepository, UserType } from "./types";
 
-export default class UserRepository implements IUserRepository {
-  private repository: UserType[];
+// TODO: review types and link with IUserRepository
+export default class UserRepository {
+  private repository: Knex;
 
   constructor() {
-    this.repository = [];
+    this.repository = knex(knexconfig["development"]);
   }
 
-  public listUsers(): UserType[] {
-    return this.repository;
+  public async listUsers(): Promise<Knex.QueryBuilder<UserType, UserType>> {
+    return this.repository<UserType, UserType>("users").select();
   }
 
-  public createUser(newUserDTO: CreateUserDTO): UserType {
-    const newUser = { id: this.repository.length, ...newUserDTO };
-    this.repository.push(newUser);
-    return newUser;
+  public async createUser(newUserDTO: CreateUserDTO): Promise<void> {
+    await this.repository
+      .insert<CreateUserDTO>(newUserDTO)
+      .into<UserType>("users");
+    return;
   }
 
-  public findUserById(userId: UserType["id"]): UserType {
-    const user = this.repository.find((user: UserType) => user.id === userId);
-    return user!; // TODO: remove !
+  public async findUserById(userId: UserType["id"]): Promise<UserType> {
+    const user = await this.repository<UserType, UserType>("users")
+      .select()
+      .whereRaw("id = ?", [userId]);
+
+    return user;
   }
 
-  public deleteUserById(userId: UserType["id"]): UserType {
-    const deletedUser = this.findUserById(userId);
+  public async deleteUserById(userId: UserType["id"]): Promise<UserType> {
+    const deletedUser = await this.findUserById(userId);
 
-    this.repository = this.repository.filter(
-      (user: UserType) => user.id !== userId
-    );
+    await this.repository<UserType>("users").where("id", userId).del();
 
     return deletedUser;
   }
 
-  public updateUser(userId: UserType["id"], newInfo: CreateUserDTO): UserType {
-    // TODO: this can be undefined
-    const userIndex = this.repository.findIndex(
-      (user: UserType) => user.id === userId
-    );
+  public async updateUser(
+    userId: UserType["id"],
+    newInfo: CreateUserDTO
+  ): Promise<void> {
+    await this.repository<UserType>("users")
+      .where({ id: userId })
+      .update<CreateUserDTO>(newInfo);
 
-    this.repository[userIndex] = { ...this.repository[userIndex], ...newInfo };
-
-    return this.repository[userIndex];
+    return;
   }
 }
