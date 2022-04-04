@@ -1,7 +1,7 @@
 "reach 0.1";
 
 const User = {
-  getMsg: Fun([], Bytes(5)),
+  getMsg: Fun([], Bytes(64)),
 };
 
 export const main = Reach.App(() => {
